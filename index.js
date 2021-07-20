@@ -103,10 +103,16 @@ function refresh(cookies) {
     })
         .then(res => res.text())
         .then(body => cheerio.load(body))
-        .then(html => html('h3:contains("Moj predmetnik")').siblings('.row-striped').children('.row').each((i, el) => {
-            predmeti.push(getDataFromRow(html, el));
-        }))
-        .catch(err => console.error(err));
+        .then(html => {
+            predmeti = [];
+            html('h3:contains("Moj predmetnik")').siblings('.row-striped').children('.row').each((i, el) => {
+                predmeti.push(getDataFromRow(html, el));
+            })
+        })
+        .catch(err => {
+            console.error(err);
+            predmeti = [];
+        });
 }
 
 /**
