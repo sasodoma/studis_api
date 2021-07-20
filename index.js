@@ -16,11 +16,6 @@ app.get('/', ((req, res) => {
     res.send(JSON.stringify(predmeti));
 }));
 
-getLoginForm()
-    .then(res => login(res))
-    .then(cookies => loop(cookies))
-    .catch(err => console.error(err));
-
 async function getLoginForm() {
     let res = await fetch("https://studij.fe.uni-lj.si/Account/Login", {
         "headers": {
@@ -108,28 +103,54 @@ function refresh(cookies) {
     })
         .then(res => res.text())
         .then(body => cheerio.load(body))
-        .then(html => html('.row-striped').eq(0).html())
-        .then(body => cheerio.load(body))
-        .then(table => table('.row').each((i, el) => {
-            predmeti.push(getDataFromRow(table(el).html()));
+        .then(html => html('h3:contains("Moj predmetnik")').siblings('.row-striped').children('.row').each((i, el) => {
+            predmeti.push(getDataFromRow(html, el));
         }))
         .catch(err => console.error(err));
 }
 
-function getDataFromRow(row) {
+/**
+ * Creates an object representing the grades for a subject.
+ * @param {cheerio.CheerioAPI} html
+ * @param {Element} row
+ * @returns {{}}
+ */
+function getDataFromRow(html, row) {
     let predmet = {};
-    let body = cheerio.load(row);
-    predmet.name = body('span[data-toggle=tooltip]').first().text().trim();
-    let micros = body('.skip-micro');
+    predmet.ime = html(row).find('span[data-toggle=tooltip]').first().text().trim();
+    let micros = html(row).find('.skip-micro');
     predmet.sprotne = micros.eq(1).children().first().text().trim();
-    predmet.kolokviji = micros.eq(2).children().first().text().trim();
+    predmet.kolokviji = {skupaj: "", posamezno: []};
+    predmet.kolokviji.skupaj = micros.eq(2).children('span[title^="U"]').first().text().trim();
+    micros.eq(2).children('span[title^="Š"]').each((index, el) => {
+        predmet.kolokviji.posamezno.push(html(el).text());
+    })
     predmet.izpit = micros.eq(3).children().first().text().trim();
     predmet.ocena = micros.eq(4).children().first().children().first().text().trim();
     return predmet;
 }
 
+function relog() {
+    getLoginForm()
+        .then(res => login(res))
+        .then(cookies => loop(cookies))
+        .catch(err => console.error(err));
+}
+
+let cookieTime = new Date();
 
 function loop(cookies) {
-    refresh(cookies);
-    setTimeout(() => {loop(cookies)},60000);
+    let time = new Date();
+    // Re-login every 24 hours
+    if (time - cookieTime > 24 * 60 * 60 * 1000) {
+        cookieTime = time;
+        relog();
+    } else {
+        refresh(cookies);
+        setTimeout(() => {
+            loop(cookies)
+        }, 60000);
+    }
 }
+
+relog();
