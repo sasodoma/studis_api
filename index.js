@@ -16,8 +16,8 @@ app.get('/', ((req, res) => {
     res.send(JSON.stringify(predmeti));
 }));
 
-async function getLoginForm() {
-    let res = await fetch("https://studij.fe.uni-lj.si/Account/Login", {
+function getLoginForm() {
+    let promise = fetch("https://studij.fe.uni-lj.si/Account/Login", {
         "headers": {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "accept-language": "en-SI,en-US;q=0.9,en;q=0.8",
@@ -36,12 +36,13 @@ async function getLoginForm() {
         "method": "GET",
         "mode": "cors"
     });
-    let html = cheerio.load(await res.text());
-    let input = html('input[name="__RequestVerificationToken"]')[0];
-    let token = input.attribs.value;
-    let loginCookies = parseCookies(res);
-
-    return {token: token, cookies: loginCookies};
+    return Promise.all([
+        promise.then(res => res.text())
+            .then(body => cheerio.load(body))
+            .then(html => html('input[name="__RequestVerificationToken"]')[0])
+            .then(input => ({token: input.attribs.value})),
+        promise.then(res => ({cookies: parseCookies(res)}))
+    ]).then(res => Object.assign({}, ...res))
 }
 
 function parseCookies(response) {
@@ -52,8 +53,8 @@ function parseCookies(response) {
     }).join(';');
 }
 
-async function login(params) {
-    let res = await fetch("https://studij.fe.uni-lj.si/Account/Login", {
+function login(params) {
+    return fetch("https://studij.fe.uni-lj.si/Account/Login", {
         "headers": {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "accept-language": "en-SI,en-US;q=0.9,en;q=0.8",
@@ -76,9 +77,9 @@ async function login(params) {
         "method": "POST",
         "mode": "cors",
         "redirect": "manual"
-    });
-    let loginCookies = parseCookies(res);
-    return `${params.cookies}; ${loginCookies}`;
+    })
+        .then(res => parseCookies(res))
+        .then(loginCookies => `${params.cookies}; ${loginCookies}`);
 }
 
 function refresh(cookies) {
@@ -112,6 +113,7 @@ function refresh(cookies) {
         .catch(err => {
             console.error(err);
             predmeti = [];
+            reLog();
         });
 }
 
@@ -136,11 +138,15 @@ function getDataFromRow(html, row) {
     return predmet;
 }
 
-function relog() {
+function reLog() {
     getLoginForm()
         .then(res => login(res))
         .then(cookies => loop(cookies))
-        .catch(err => console.error(err));
+        .catch(err => {
+            console.error(err);
+            console.log("Error while logging in, try again in 60 seconds.")
+            setTimeout(reLog, 60000);
+        });
 }
 
 let cookieTime = new Date();
@@ -150,7 +156,7 @@ function loop(cookies) {
     // Re-login every 24 hours
     if (time - cookieTime > 24 * 60 * 60 * 1000) {
         cookieTime = time;
-        relog();
+        reLog();
     } else {
         refresh(cookies);
         setTimeout(() => {
@@ -159,4 +165,4 @@ function loop(cookies) {
     }
 }
 
-relog();
+reLog();
