@@ -37,7 +37,7 @@ ki ustrezajo posameznim predmetom. Objekti so oblike:
     "6": "število ocen 6",
     "...":  "...",
     "10": "število ocen 10",
-    "skupno": "skupno število ocen"
+    "skupaj": "skupno število ocen"
   }
 }
 ```

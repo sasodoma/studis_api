@@ -169,7 +169,7 @@ function getStatistics(predmeti, cookies) {
                         predmet.statistika["8"] = parseInt(ocene[2]);
                         predmet.statistika["9"] = parseInt(ocene[3]);
                         predmet.statistika["10"] = parseInt(ocene[4]);
-                        predmet.statistika.skupno = ocene.reduce((a, b) => parseInt(a) + parseInt(b), 0);
+                        predmet.statistika.skupaj = ocene.reduce((a, b) => parseInt(a) + parseInt(b), 0);
                     }
                 }
             );
