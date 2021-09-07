@@ -32,7 +32,13 @@ ki ustrezajo posameznim predmetom. Objekti so oblike:
     "posamezno": ["niz točk posameznih kolokvijev"]
   },
   "izpit": "točke pisnega izpita",
-  "ocena": "končna ocena predmeta"
+  "ocena": "končna ocena predmeta",
+  "statistika": {
+    "6": "število ocen 6",
+    "...":  "...",
+    "10": "število ocen 10",
+    "skupno": "skupno število ocen"
+  }
 }
 ```
 Skripta podatke osvežuje enkrat na minuto, enkrat na dan pa se ponovno prijavi 

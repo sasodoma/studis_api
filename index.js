@@ -11,8 +11,19 @@ http.listen(3604);
 
 let predmeti = []
 
+let counter = 10;
+let nextRefresh = null;
+
 app.get('/', ((req, res) => {
     res.setHeader('Content-Type', 'application/json');
+    if (counter === 0) {
+        clearTimeout(nextRefresh);
+        counter = 10;
+        refresh().then(() => {
+            res.send(JSON.stringify(predmeti));
+
+        }).catch(console.error);
+    }
     res.send(JSON.stringify(predmeti));
 }));
 
@@ -83,7 +94,7 @@ function login(params) {
 }
 
 function refresh(cookies) {
-    fetch("https://studij.fe.uni-lj.si/DashboardStudent", {
+    return fetch("https://studij.fe.uni-lj.si/DashboardStudent", {
         "headers": {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
             "accept-language": "en-SI,en-US;q=0.9,en;q=0.8",
@@ -108,13 +119,64 @@ function refresh(cookies) {
             predmeti = [];
             html('h3:contains("Moj predmetnik")').siblings('.row-striped').children('.row').each((i, el) => {
                 predmeti.push(getDataFromRow(html, el));
-            })
+            });
+            return predmeti;
         })
+        .then(predmeti => getStatistics(predmeti, cookies))
         .catch(err => {
             console.error(err);
-            predmeti = [];
             reLog();
+            predmeti = [];
         });
+}
+
+function getStatistics(predmeti, cookies) {
+    let promises = [];
+
+    for (let predmet of predmeti) {
+        if (!predmet.url) {
+            delete predmet.url;
+            continue;
+        }
+        let promise = fetch(predmet.url, {
+            "headers": {
+                "accept": "text/html, */*; q=0.01",
+                "accept-language": "en-SI,en-US;q=0.9,en;q=0.8",
+                "sec-ch-ua": "\" Not;A Brand\";v=\"99\", \"Google Chrome\";v=\"91\", \"Chromium\";v=\"91\"",
+                "sec-ch-ua-mobile": "?0",
+                "sec-fetch-dest": "empty",
+                "sec-fetch-mode": "cors",
+                "sec-fetch-site": "same-origin",
+                "x-requested-with": "XMLHttpRequest",
+                "cookie": cookies
+            },
+            "referrer": "https://studij.fe.uni-lj.si/",
+            "referrerPolicy": "strict-origin",
+            "body": null,
+            "method": "GET",
+            "mode": "cors"
+        })
+            .then(res => res.text())
+            .then(body => body.match(/(?<=data: \[)(.*?)(?=],)/s)[0].split(","))
+            .then(ocene => {
+                    delete predmet.url;
+                    if (ocene.length !== 5) {
+                        predmet.statistika = "";
+                    } else {
+                        predmet.statistika = {};
+                        predmet.statistika["6"] = parseInt(ocene[0]);
+                        predmet.statistika["7"] = parseInt(ocene[1]);
+                        predmet.statistika["8"] = parseInt(ocene[2]);
+                        predmet.statistika["9"] = parseInt(ocene[3]);
+                        predmet.statistika["10"] = parseInt(ocene[4]);
+                        predmet.statistika.skupno = ocene.reduce((a, b) => parseInt(a) + parseInt(b), 0);
+                    }
+                }
+            );
+        promises.push(promise);
+    }
+
+    return Promise.all(promises);
 }
 
 /**
@@ -135,6 +197,8 @@ function getDataFromRow(html, row) {
     })
     predmet.izpit = micros.eq(3).children().first().text().trim();
     predmet.ocena = micros.eq(4).children().first().children().first().text().trim();
+    predmet.statistika = "";
+    predmet.url = micros.eq(4).children().first().children('a').attr('data-modal-url');
     return predmet;
 }
 
@@ -158,10 +222,16 @@ function loop(cookies) {
         cookieTime = time;
         reLog();
     } else {
-        refresh(cookies);
-        setTimeout(() => {
+        refresh(cookies).catch(console.error);
+        let timeout = 60000 * 60;
+        if (counter > 0) {
+            counter--;
+            timeout = 60000;
+        }
+        nextRefresh = setTimeout(() => {
             loop(cookies)
-        }, 60000);
+        }, timeout);
+
     }
 }
 
