@@ -21,7 +21,7 @@ app.get('/', ((req, res) => {
         counter = 10;
         refresh().then(() => {
             res.send(JSON.stringify(predmeti));
-        }).catch(console.error);
+        }).catch(logError);
         return;
     }
     res.send(JSON.stringify(predmeti));
@@ -124,7 +124,7 @@ function refresh(cookies) {
         })
         .then(predmeti => getStatistics(predmeti, cookies))
         .catch(err => {
-            console.error(err);
+            logError(err);
             reLog();
             predmeti = [];
         });
@@ -207,7 +207,7 @@ function reLog() {
         .then(res => login(res))
         .then(cookies => loop(cookies))
         .catch(err => {
-            console.error(err);
+            logError(err);
             console.log("Error while logging in, try again in 60 seconds.")
             setTimeout(reLog, 60000);
         });
@@ -222,7 +222,7 @@ function loop(cookies) {
         cookieTime = time;
         reLog();
     } else {
-        refresh(cookies).catch(console.error);
+        refresh(cookies).catch(logError);
         let timeout = 60000 * 60;
         if (counter > 0) {
             counter--;
@@ -236,3 +236,8 @@ function loop(cookies) {
 }
 
 reLog();
+
+
+function logError(err) {
+    console.error(new Date().toISOString(), err);
+}
