@@ -11,6 +11,7 @@ http.listen(3604);
 
 let predmeti = []
 
+let currentCookies = "";
 let counter = 10;
 let nextRefresh = null;
 
@@ -19,7 +20,7 @@ app.get('/', ((req, res) => {
     if (counter === 0) {
         clearTimeout(nextRefresh);
         counter = 10;
-        refresh().then(() => {
+        refresh(currentCookies).then(() => {
             res.send(JSON.stringify(predmeti));
         }).catch(logError);
         return;
@@ -216,6 +217,7 @@ function reLog() {
 let cookieTime = new Date();
 
 function loop(cookies) {
+    currentCookies = cookies;
     let time = new Date();
     // Re-login every 24 hours
     if (time - cookieTime > 24 * 60 * 60 * 1000) {
