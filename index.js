@@ -23,6 +23,9 @@ app.get('/', ((req, res) => {
         refresh(currentCookies).then(() => {
             res.send(JSON.stringify(predmeti));
         }).catch(logError);
+        nextRefresh = setTimeout(() => {
+            loop(currentCookies);
+        }, 60000);
         return;
     }
     res.send(JSON.stringify(predmeti));
@@ -231,7 +234,7 @@ function loop(cookies) {
             timeout = 60000;
         }
         nextRefresh = setTimeout(() => {
-            loop(cookies)
+            loop(cookies);
         }, timeout);
 
     }
