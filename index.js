@@ -21,8 +21,8 @@ app.get('/', ((req, res) => {
         counter = 10;
         refresh().then(() => {
             res.send(JSON.stringify(predmeti));
-
         }).catch(console.error);
+        return;
     }
     res.send(JSON.stringify(predmeti));
 }));
