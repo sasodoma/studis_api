@@ -279,6 +279,9 @@ class StudisClient {
         return Promise.all(promises);
     }
 
+    /**
+     * Performs a new login and sets the cookies
+     */
     #reLog() {
         this.#getLoginForm()
             .then(token => this.#login(token))
@@ -290,6 +293,9 @@ class StudisClient {
             });
     }
 
+    /**
+     * The main loop, handling data updates and relogs.
+     */
     #loop() {
         let time = new Date();
         // Re-login every 24 hours
