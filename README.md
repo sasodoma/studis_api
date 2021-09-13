@@ -21,8 +21,31 @@ in izlušči podatke o predmetih ter pripadajočih ocenah.
 ## Uporaba API-ja
 
 Aplikacija na vratih 3604 postavi strežnik, ki ob klicu GET vrne nazadnje 
-prebrane podatke v formatu JSON. Rezultat je JSON Array, ki vsebuje objekte, 
-ki ustrezajo posameznim predmetom. Objekti so oblike:
+prebrane podatke v formatu JSON. Skripta podatke osvežuje enkrat na minuto,
+enkrat na dan pa se ponovno prijavi v Studis, da osveži piškotke. 
+Rezultat je JSON Object, ki vsebuje Arraye, ki ustrezajo posameznim 
+kategorijam v Studisu.
+
+```json
+{
+  "roki": [],
+  "predmetnik": [],
+  "sklepi": [],
+  "prosnje": [],
+  "racuni": [],
+  "posodobljeno": "čas zadnje uspešne posodobitve v formatu ISO 8601"
+}
+```
+
+### Roki
+
+_TBA_
+
+### Predmetnik
+
+Array `predmetnik` vsebuje objekte, ki ustrezajo posameznim predmetom. 
+Objekti so oblike:
+
 ```json
 {
   "ime": "ime in šifra predmeta",
@@ -41,8 +64,18 @@ ki ustrezajo posameznim predmetom. Objekti so oblike:
   }
 }
 ```
-Skripta podatke osvežuje enkrat na minuto, enkrat na dan pa se ponovno prijavi 
-v Studis, da osveži piškotke.
+
+### Sklepi
+
+_TBA_
+
+### Prošnje
+
+_TBA_
+
+### Računi
+
+_TBA_
 
 ## FAQ
 
@@ -60,5 +93,5 @@ v Studis, da osveži piškotke.
   
 * **Zakaj je koda grda / nekomentirana / neučinkovita**
 
-    Ker sem program napisal v dveh dneh v prostem času, ker nisem programer in
-    ker iskreno povedano še vedno nimam pojma, kako deluje jQuery.
+    Ker sem štromar ne pa FRI-jevec in ker iskreno povedano 
+    še vedno nimam pojma, kako deluje jQuery.
