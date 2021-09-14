@@ -62,9 +62,18 @@ _TBA_
 }
 ```
 
-### Sklepi
+### Sklepi `sklepi [{}]`
 
-_TBA_
+```json
+{
+  "od": "datum začetka veljavnosti",
+  "do": "datum konca veljavnosti",
+  "tekst": "besedilo sklepa",
+  "tekst_en": "besedilo sklepa v angleščini",
+  "izdajatelj": "izdajatelj sklepa",
+  "priponka": "ime priponke"
+}
+```
 
 ### Prošnje
 

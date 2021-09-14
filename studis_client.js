@@ -183,7 +183,8 @@ class StudisClient {
 
         return Promise.all([
             body.then(html => this.#parsePredmetnik(html)),
-            body.then(html => this.#parseRacuni(html))
+            body.then(html => this.#parseRacuni(html)),
+            body.then(html => this.#parseSklepi(html))
         ]).then(() => this.#data.posodobljeno = (new Date()).toISOString())
             .catch(logError);
     }
@@ -313,6 +314,40 @@ class StudisClient {
         racun.trr = cols.eq(7).text().trim();
 
         return racun;
+    }
+
+    /**
+     * Parses all of the decisions and populates the data.sklepi array.
+     * @param {cheerio.CheerioAPI} html The Cheerio object of the page.
+     */
+    #parseSklepi(html) {
+        let sklepi = [];
+        html('h3:contains("Sklepi")').siblings(".table-responsive")
+            .find("tbody").children("tr").each((i, el) => {
+            sklepi.push(StudisClient.#getDecisionDataFromRow(html, el));
+        });
+        this.#data.sklepi = sklepi;
+        return Promise.resolve(sklepi);
+    }
+
+    /**
+     * Creates an object representing the data for a decision.
+     * @param {cheerio.CheerioAPI} html
+     * @param {Element} row
+     * @returns {{}}
+     */
+    static #getDecisionDataFromRow(html, row) {
+        let sklep = {};
+        let cols = html(row).find('td');
+
+        sklep.od = cols.eq(1).text().trim();
+        sklep.do = cols.eq(2).text().trim();
+        sklep.tekst = cols.eq(3).text().trim();
+        sklep.tekst_en = cols.eq(4).text().trim();
+        sklep.izdajatelj = cols.eq(5).text().trim();
+        sklep.priponka = cols.eq(6).text().trim();
+
+        return sklep;
     }
 
     /**
