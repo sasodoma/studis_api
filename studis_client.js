@@ -179,7 +179,16 @@ class StudisClient {
             "body": null,
             "method": "GET",
             "mode": "cors"
-        }).then(res => res.text()).then(body => cheerio.load(body));
+        }).then(res => res.text())
+            .then(body => cheerio.load(body))
+            .then(html => {
+                if (html('#principal-dropdown-menu').text().includes('Slovenian')) {
+                    this.#language = 'en';
+                } else {
+                    this.#language = 'sl';
+                }
+                return html;
+            });
 
         return Promise.all([
             body.then(html => this.#parsePredmetnik(html)),
@@ -197,7 +206,8 @@ class StudisClient {
      */
     #parsePredmetnik(html) {
         let predmeti = [];
-        html('h3:contains("Moj predmetnik")').siblings('.row-striped').children('.row')
+        html(`h3:contains("${this.#strings[this.#language].predmetnik}")`)
+            .siblings('.row-striped').children('.row')
             .each((i, el) => {
                 predmeti.push(StudisClient.#getSubjectDataFromRow(html, el));
             });
@@ -287,7 +297,7 @@ class StudisClient {
      */
     #parseRacuni(html) {
         let racuni = [];
-        html('h3:contains("Neplačani računi")').siblings(".table-responsive")
+        html(`h3:contains("${this.#strings[this.#language].racuni}")`).siblings(".table-responsive")
             .find("tbody").children("tr").each((i, el) => {
                 racuni.push(StudisClient.#getBillDataFromRow(html, el));
         });
@@ -322,7 +332,7 @@ class StudisClient {
      */
     #parseSklepi(html) {
         let sklepi = [];
-        html('h3:contains("Sklepi")').siblings(".table-responsive")
+        html(`h3:contains("${this.#strings[this.#language].sklepi}")`).siblings(".table-responsive")
             .find("tbody").children("tr").each((i, el) => {
             sklepi.push(StudisClient.#getDecisionDataFromRow(html, el));
         });
@@ -386,6 +396,24 @@ class StudisClient {
 
         }
     }
+
+    #language = "sl";
+    #strings = {
+        sl: {
+            roki: "Razpisani izpitni roki",
+            predmetnik: "Moj predmetnik",
+            sklepi: "Sklepi",
+            prosnje: "Prošnje",
+            racuni: "Neplačani računi"
+        },
+        en: {
+            roki: "Exam dates",
+            predmetnik: "My curriculum",
+            sklepi: "Decisions",
+            prosnje: "Applications",
+            racuni: "Outstanding payments"
+        }
+    };
 }
 
 module.exports = StudisClient;
