@@ -182,7 +182,8 @@ class StudisClient {
         }).then(res => res.text()).then(body => cheerio.load(body));
 
         return Promise.all([
-            body.then(html => this.#parsePredmetnik(html))
+            body.then(html => this.#parsePredmetnik(html)),
+            body.then(html => this.#parseRacuni(html))
         ]).then(() => this.#data.posodobljeno = (new Date()).toISOString())
             .catch(logError);
     }
@@ -197,18 +198,18 @@ class StudisClient {
         let predmeti = [];
         html('h3:contains("Moj predmetnik")').siblings('.row-striped').children('.row')
             .each((i, el) => {
-                predmeti.push(this.#getDataFromRow(html, el));
+                predmeti.push(StudisClient.#getSubjectDataFromRow(html, el));
             });
         return this.#getStatistics(predmeti).then(() => this.#data.predmetnik = predmeti);
     }
 
     /**
-     * Creates an object representing the grades for a subject.
+     * Creates an object representing the data for a subject.
      * @param {cheerio.CheerioAPI} html
      * @param {Element} row
      * @returns {{}}
      */
-    #getDataFromRow(html, row) {
+    static #getSubjectDataFromRow(html, row) {
         let predmet = {};
         predmet.ime = html(row).find('span[data-toggle=tooltip]').first().text().trim();
         let micros = html(row).find('.skip-micro');
@@ -277,6 +278,41 @@ class StudisClient {
         }
 
         return Promise.all(promises);
+    }
+
+    /**
+     * Parses all of the unpaid bills and populates the data.racuni array.
+     * @param {cheerio.CheerioAPI} html The Cheerio object of the page.
+     */
+    #parseRacuni(html) {
+        let racuni = [];
+        html('h3:contains("Neplačani računi")').siblings(".table-responsive")
+            .find("tbody").children("tr").each((i, el) => {
+                racuni.push(StudisClient.#getBillDataFromRow(html, el));
+        });
+        this.#data.racuni = racuni;
+        return Promise.resolve(racuni);
+    }
+
+    /**
+     * Creates an object representing the data for a bill.
+     * @param {cheerio.CheerioAPI} html
+     * @param {Element} row
+     * @returns {{}}
+     */
+    static #getBillDataFromRow(html, row) {
+        let racun = {};
+        let cols = html(row).find('td');
+
+        racun.stevilka = cols.eq(1).text().trim();
+        racun.znesek = cols.eq(2).text().trim();
+        racun.za_placilo = cols.eq(3).text().trim();
+        racun.datum_zapadlosti = cols.eq(4).text().trim();
+        racun.namen = cols.eq(5).text().trim();
+        racun.sklic = cols.eq(6).text().trim();
+        racun.trr = cols.eq(7).text().trim();
+
+        return racun;
     }
 
     /**
