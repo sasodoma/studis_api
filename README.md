@@ -41,10 +41,7 @@ kategorijam v Studisu.
 
 _TBA_
 
-### Predmetnik
-
-Array `predmetnik` vsebuje objekte, ki ustrezajo posameznim predmetom. 
-Objekti so oblike:
+### Predmetnik `predmetnik [{}]`
 
 ```json
 {
@@ -73,9 +70,19 @@ _TBA_
 
 _TBA_
 
-### Računi
+### Računi `racuni [{}]`
 
-_TBA_
+```json
+{
+  "stevilka": "številka računa",
+  "znesek": "znesek računa",
+  "za_placilo": "znesek, ki ga je treba plačati",
+  "datum_zapadlosti": "datum zapadlosti",
+  "namen": "namen",
+  "sklic": "sklic",
+  "trr": "TRR fakultete"
+}
+```
 
 ## FAQ
 
