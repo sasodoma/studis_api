@@ -193,9 +193,46 @@ class StudisClient {
         return Promise.all([
             body.then(html => this.#parsePredmetnik(html)),
             body.then(html => this.#parseRacuni(html)),
-            body.then(html => this.#parseSklepi(html))
+            body.then(html => this.#parseSklepi(html)),
+            body.then(html => this.#parseRoki(html))
         ]).then(() => this.#data.posodobljeno = (new Date()).toISOString())
             .catch(logError);
+    }
+
+    /**
+     * Parses all the exams and populates the data.roki array.
+     * @param {cheerio.CheerioAPI} html The Cheerio object of the page.
+     * @returns {Promise<*[]>} A promise that resolves
+     * when data.predmetnik is populated.
+     */
+    #parseRoki(html) {
+        let roki = [];
+        html(`h3:contains("${this.#strings[this.#language].roki}")`)
+            .siblings('.row-striped').children('.row')
+            .each((i, el) => {
+                roki.push(StudisClient.#getExamDataFromRow(html, el));
+            });
+        this.#data.roki = roki;
+        return Promise.resolve(roki);
+    }
+
+    /**
+     * Creates an object representing the data for a subject.
+     * @param {cheerio.CheerioAPI} html
+     * @param {Element} row
+     * @returns {{}}
+     */
+    static #getExamDataFromRow(html, row) {
+        let exam = {};
+        let micros = html(row).find('.skip-micro');
+        exam.predmet = micros.eq(0).text().split('\n')[1].trim();
+        exam.izvajalci = [];
+        html(row).find('.text-nowrap').each((i, el) => {
+            exam.izvajalci.push(html(el).text().split(',')[0]);
+        });
+        exam.letnik = exam.izvajalci.pop().split('.')[0].trim();
+        exam.data = micros.eq(1).text().trim();
+        return exam;
     }
 
     /**
