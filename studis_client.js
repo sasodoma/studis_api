@@ -199,7 +199,7 @@ class StudisClient {
     }
 
     /**
-     * Parses all of the subjects and populates the data.predmetnik array.
+     * Parses all the subjects and populates the data.predmetnik array.
      * @param {cheerio.CheerioAPI} html The Cheerio object of the page.
      * @returns {Promise<*[]>} A promise that resolves
      * when data.predmetnik is populated.
