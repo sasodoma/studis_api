@@ -14,5 +14,5 @@ client.begin(secrets.Username, secrets.Password);
 
 app.get('/', ((req, res) => {
     res.setHeader('Content-Type', 'application/json');
-    client.getData().then(json => res.send(JSON.stringify(json))).catch(logError);
+    client.getData().then(json => res.send(JSON.stringify(json, null, 2))).catch(logError);
 }));
