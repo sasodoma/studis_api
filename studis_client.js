@@ -79,7 +79,7 @@ class StudisClient {
      * @returns {Promise<string>} A promise containing __RequestVerificationToken.
      */
     #getLoginForm() {
-        return fetch("https://studij.fe.uni-lj.si/Account/Login", {
+        return fetch("https://studisfe.uni-lj.si/Account/Login", {
             "headers": {
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                 "accept-language": "en-SI,en-US;q=0.9,en;q=0.8",
@@ -127,7 +127,7 @@ class StudisClient {
      * @returns {Promise<string>} The session cookies.
      */
     #login(token) {
-        return fetch("https://studij.fe.uni-lj.si/Account/Login", {
+        return fetch("https://studisfe.uni-lj.si/Account/Login", {
             "headers": {
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                 "accept-language": "en-SI,en-US;q=0.9,en;q=0.8",
@@ -142,7 +142,7 @@ class StudisClient {
                 "upgrade-insecure-requests": "1",
                 "cookie": this.#cookies
             },
-            "referrer": "https://studij.fe.uni-lj.si/",
+            "referrer": "https://studisfe.uni-lj.si/",
             "referrerPolicy": "strict-origin",
             "body": `__RequestVerificationToken=${token}` +
                 `&Username=${encodeURIComponent(this.username)}` +
@@ -161,7 +161,7 @@ class StudisClient {
      * when all parser functions resolve.
      */
     #refresh() {
-        let body = fetch("https://studij.fe.uni-lj.si/DashboardStudent", {
+        let body = fetch("https://studisfe.uni-lj.si/DashboardStudent", {
             "headers": {
                 "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
                 "accept-language": "en-SI,en-US;q=0.9,en;q=0.8",
@@ -299,7 +299,7 @@ class StudisClient {
                     "x-requested-with": "XMLHttpRequest",
                     "cookie": this.#cookies
                 },
-                "referrer": "https://studij.fe.uni-lj.si/",
+                "referrer": "https://studisfe.uni-lj.si/",
                 "referrerPolicy": "strict-origin",
                 "body": null,
                 "method": "GET",
