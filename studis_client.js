@@ -231,6 +231,8 @@ class StudisClient {
             exam.izvajalci.push(html(el).text().split(',')[0]);
         });
         exam.letnik = exam.izvajalci.pop().split('.')[0].trim();
+        exam.hidden = micros.eq(1).find('.hide').text().trim();
+        micros.eq(1).find('.hide').text('') // Delete the data, so it's easier to get the rest.
         exam.data = micros.eq(1).text().trim();
         return exam;
     }
